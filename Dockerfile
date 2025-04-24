@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
+COPY tsconfig.json ./
 
 # Copy the rest of the application source code to the working directory
 COPY ./src ./src
