@@ -1,10 +1,7 @@
 import { CronJob } from 'cron';
-import PostgresHandler from './handlers/PostgresHandler';
 import env from './env';
 
-const backup = async () => {
-  
-}
+const backup = async () => {};
 
 CronJob.from({
   cronTime: env.CRON_SCHEDULE,
