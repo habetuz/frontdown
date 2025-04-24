@@ -12,28 +12,27 @@ export default class PostgresHandler extends ServiceHandler {
   }
 
   async stopService(): Promise<void> {
-    const info = await this.docker.listContainers();
-    if (!info.some((container) => container.Names[0] === '/postgres')) {
-      throw new Error('No running postgres container found');
-    }
-
-    this.containerInfo = info.filter((container) => {
-      return container.Names[0] === '/postgres';
-    })[0];
-
-    const containerInstance = this.docker.getContainer(this.containerInfo.Id);
-    await containerInstance.stop();
+    // const info = await this.docker.listContainers();
+    // if (!info.some((container) => container.Names[0] === '/postgres')) {
+    //   throw new Error('No running postgres container found');
+    // }
+    // this.containerInfo = info.filter((container) => {
+    //   return container.Names[0] === '/postgres';
+    // })[0];
+    // const containerInstance = this.docker.getContainer(this.containerInfo.Id);
+    // await containerInstance.stop();
   }
 
   async startService(): Promise<void> {
-    if (!this.containerInfo) {
-      throw new Error(
-        'No container info available. Please stop the service first.',
-      );
-    }
-    const containerInstance = this.docker.getContainer(this.containerInfo.Id);
-    await containerInstance.start();
+    // if (!this.containerInfo) {
+    //   throw new Error(
+    //     'No container info available. Please stop the service first.',
+    //   );
+    // }
+    // const containerInstance = this.docker.getContainer(this.containerInfo.Id);
+    // await containerInstance.start();
   }
+
   async gatherData(): Promise<void> {
     if (!this.containerInfo) {
       throw new Error(
