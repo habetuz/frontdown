@@ -1,13 +1,23 @@
 {
   "devDependencies": {
     "@eslint/js": "^9.25.1",
+    "@types/dockerode": "^3.3.38",
     "eslint": "^9.25.1",
     "prettier": "^3.5.3",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.0"
   },
   "scripts": {
     "lint": "eslint",
-    "format": "prettier -w ."
+    "format": "prettier -w .",
+    "start": "ts-node src/main.ts"
+  },
+  "dependencies": {
+    "@types/cron": "^2.0.1",
+    "@zodyac/env": "^1.1.8",
+    "cron": "^4.3.0",
+    "dockerode": "^4.0.6",
+    "zod": "^3.24.3"
   }
 }

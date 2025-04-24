@@ -1,9 +1,9 @@
 {
+  "include": ["./src/**/*"],
+  "exclude": ["./node_modules", "./dist"],
+
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
-
-    "include": ["./src/**/*"],
-    "exclude": ["./node_modules", "./dist"],
 
     /* Projects */
     // "incremental": true,                              /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
