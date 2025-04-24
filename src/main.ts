@@ -1,7 +1,9 @@
 import { CronJob } from 'cron';
 import env from './env';
 
-const backup = async () => {};
+const backup = () => {
+  console.log('Starting backup...');
+};
 
 CronJob.from({
   cronTime: env.CRON_SCHEDULE,
