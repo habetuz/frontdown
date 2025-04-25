@@ -1,37 +1,69 @@
 import { CronJob } from 'cron';
 import env from './env';
-import { create_postgres_backup } from './postgres';
 import { execa } from 'execa';
+
+const BORG_RSH = `ssh -i ${env.OFFSITE_SSH_KEY_FILE} -o StrictHostKeyChecking=no -o UserKnownHostsFile=${env.SSH_KNOWN_HOSTS_FILE}`;
+const BORG_REPO_OFFSITE = `ssh://${env.OFFSITE_SSH_USER}@${env.OFFSITE_SSH_USER}.your-storagebox.de:23/${env.BACKUP_REPOSITORY_OFFSITE}`;
 
 const backup = async () => {
   console.info('Starting backup...');
   console.info('Checking repository...');
-  const repoExists = await new Promise((resolve) => {
-    execa`borg info ${env.BACKUP_REPOSITORY}`
+  const offsiteCheck = new Promise<boolean>((resolve, reject) => {
+    execa({
+      env: {
+        BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+        BORG_REPO: BORG_REPO_OFFSITE,
+        BORG_RSH: BORG_RSH,
+      },
+    })`borg info`
       .then(() => resolve(true))
       .catch(() => resolve(false));
+  }).then((exists) => {
+    if (exists) return;
+
+    return execa({
+      env: {
+        BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+        BORG_REPO: BORG_REPO_OFFSITE,
+        BORG_RSH: BORG_RSH,
+      },
+    })`borg init --encryption=repokey`;
   });
 
-  if (!repoExists) {
-    console.log('Creating Borg repository...');
-    await execa({
+  const localCheck = new Promise<boolean>((resolve, reject) => {
+    execa({
       env: {
-        BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSWORD,
+        BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+        BORG_REPO: env.BACKUP_REPOSITORY_LOCAL,
       },
-    })`borg init --encryption=repokey ${env.BACKUP_REPOSITORY}`;
-  }
+    })`borg info`
+      .then(() => resolve(true))
+      .catch(() => resolve(false));
+  }).then((exists) => {
+    if (exists) return;
 
-  console.info('Creating postgres backup...');
-  await create_postgres_backup();
+    return execa({
+      env: {
+        BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+        BORG_REPO: env.BACKUP_REPOSITORY_LOCAL,
+      },
+    })`borg init --encryption=repokey`;
+  });
 
-  console.info('Backing up data...');
-  await execa({
-    env: {
-      BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSWORD,
-    },
-    stdout: 'inherit',
-    stderr: 'inherit',
-  })`borg create --progress --stats --compression lz4 ${env.BACKUP_REPOSITORY}::'{now:%Y-%m-%d_%H:%M:%S}' ${env.BACKUP_DATA}`;
+  await Promise.all([offsiteCheck, localCheck]);
+  console.log('Finished creation');
+
+  // console.info('Creating postgres backup...');
+  // await create_postgres_backup();
+
+  // console.info('Backing up data...');
+  // await execa({
+  //   env: {
+  //     BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+  //   },
+  //   stdout: 'inherit',
+  //   stderr: 'inherit',
+  // })`borg create --progress --stats --compression lz4 ${env.BACKUP_REPOSITORY}::'{now:%Y-%m-%d_%H:%M:%S}' ${env.BACKUP_DATA}`;
 };
 
 CronJob.from({
