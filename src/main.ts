@@ -108,18 +108,27 @@ const createPostgresBackup = async (docker: Docker) => {
   const containerInfo = filtered[0];
   const containerInstance = docker.getContainer(containerInfo.Id);
   const exec = await containerInstance.exec({
+    AttachStderr: true,
+    AttachStdout: true,
+    AttachStdin: false,
     Cmd: ['pg_dumpall', '--username', env.POSTGRES_USER],
   });
-  const stream = await exec.start({});
+
+  const stream = await exec.start({ hijack: true, stdin: false });
 
   await fsPromises.mkdir(`${env.BACKUP_DATA}/postgres`, { recursive: true });
   const fileStream = fs.createWriteStream(
     `${env.BACKUP_DATA}/postgres/backup.sql`,
+    { encoding: 'utf-8', flags: 'w' },
   );
-  stream.pipe(fileStream);
+
+  // Demultiplex the Docker stream to clean stdout/stderr
+  docker.modem.demuxStream(stream, fileStream, process.stderr);
+
+  // Wait for the stream to finish
   await new Promise<void>((resolve, reject) => {
-    fileStream.on('finish', resolve);
-    fileStream.on('error', reject);
+    stream.on('end', resolve);
+    stream.on('error', reject);
   });
 
   logger.info('Postgres backup created');
