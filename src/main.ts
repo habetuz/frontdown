@@ -8,7 +8,7 @@ const BORG_REPO_OFFSITE = `ssh://${env.OFFSITE_SSH_USER}@${env.OFFSITE_SSH_USER}
 const backup = async () => {
   console.info('Starting backup...');
   console.info('Checking repository...');
-  const offsiteCheck = new Promise<boolean>((resolve, reject) => {
+  const offsiteCheck = new Promise<boolean>((resolve) => {
     execa({
       env: {
         BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
@@ -30,7 +30,7 @@ const backup = async () => {
     })`borg init --encryption=repokey`;
   });
 
-  const localCheck = new Promise<boolean>((resolve, reject) => {
+  const localCheck = new Promise<boolean>((resolve) => {
     execa({
       env: {
         BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,

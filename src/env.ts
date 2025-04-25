@@ -15,6 +15,8 @@ const envSchema = z.object({
   SSH_KNOWN_HOSTS_FILE: z.string().default('/config/known_hosts'),
 
   POSTGRES_USER: z.string().default('admin'),
+
+  
 });
 
 const env = parse(envSchema);
