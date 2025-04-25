@@ -21,4 +21,6 @@ This is my personal backup solution for my docker landscape using borg.
 | BACKUP_REPOSITORY_PASSPHRASE | -           | Passphrase of the borg repository                                     |
 | BACKUP_REPOSITORY_OFFSITE    | ./repo      | Path where the borg repository gets stored in the hetzner storage box |
 | POSTGRES_USER                | admin       | The user to be used when executing `pg_dumpall`                       |
+| POSTGRES_CONTAINER_NAME      | postgres    | The container name of the postgres instance to backup                 |
 | OFFSITE_SSH_USER             | -           | The user to connect to the hetzner storage box with                   |
+| CONTAINERS                   | -           | Comma seperated list of containers to stop before the backup          |
