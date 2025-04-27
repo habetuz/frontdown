@@ -27,5 +27,10 @@ const envSchema = z.object({
   }),
 });
 
+console.log('Environment Variables:');
+Object.entries(process.env).forEach(([key, value]) => {
+  console.log(`${key}: ${value}`);
+});
+
 const env = parse(envSchema);
 export default env;
