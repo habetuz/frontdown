@@ -19,7 +19,7 @@ RUN npm ci && \
 
 # Install rclone and borgbackup
 RUN apt update && \
-    apt install -y borgbackup
+    apt install -y borgbackup openssh-client
 
 # Start the application
 CMD ["node", "dist/main.js"]
