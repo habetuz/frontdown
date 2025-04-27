@@ -5,9 +5,31 @@ import Docker, { Container } from 'dockerode';
 import logger from './logger';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
+import readline from 'node:readline';
 
 const BORG_RSH = `ssh -i ${env.OFFSITE_SSH_KEY_FILE} -o StrictHostKeyChecking=no -o UserKnownHostsFile=${env.SSH_KNOWN_HOSTS_FILE}`;
 const BORG_REPO_OFFSITE = `ssh://${env.OFFSITE_SSH_USER}@${env.OFFSITE_SSH_USER}.your-storagebox.de:23/${env.BACKUP_REPOSITORY_OFFSITE}`;
+
+const formatDate = (date: Date): string => {
+  const berlinDateParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: env.TZ,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(date);
+
+  const parts: Record<string, string> = {};
+  berlinDateParts.forEach((part) => {
+    if (part.type !== 'literal') {
+      parts[part.type] = part.value;
+    }
+  });
+
+  return `${parts.year}-${parts.month}-${parts.day}-${parts.hour}-${parts.minute}`;
+};
 
 const stopContainers = async (docker: Docker): Promise<Container[]> => {
   const runningContainers = await docker.listContainers();
@@ -134,6 +156,83 @@ const createPostgresBackup = async (docker: Docker) => {
   logger.info('Postgres backup created');
 };
 
+const backupLocal = async () => {
+  const exec = execa(
+    'borg',
+    [
+      'create',
+      '--stats',
+      '--progress',
+      '--compression',
+      'lz4',
+      `::${formatDate(new Date())}`,
+      env.BACKUP_DATA,
+    ],
+    {
+      env: {
+        BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+        BORG_REPO: env.BACKUP_REPOSITORY_LOCAL,
+      },
+      stderr: 'pipe', // <-- make sure stderr is a stream
+      stdout: 'ignore', // optional: ignore stdout if you only want stderr
+    },
+  );
+
+  // Create a readline interface on stderr
+  const rl = readline.createInterface({
+    input: exec.stderr,
+    crlfDelay: Infinity,
+  });
+
+  // Stream stderr lines as they arrive
+  for await (const line of rl) {
+    logger.info(`Local: ${line}`);
+  }
+
+  // Wait for the process to complete
+  await exec;
+  logger.info('Local backup complete');
+};
+
+const backupOffsite = async () => {
+  const exec = execa(
+    'borg',
+    [
+      'create',
+      '--stats',
+      '--progress',
+      '--compression',
+      'lz4',
+      `::${formatDate(new Date())}`,
+      env.BACKUP_DATA,
+    ],
+    {
+      env: {
+        BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+        BORG_REPO: BORG_REPO_OFFSITE,
+        BORG_RSH: BORG_RSH,
+      },
+      stderr: 'pipe', // <-- make sure stderr is a stream
+      stdout: 'ignore', // optional: ignore stdout if you only want stderr
+    },
+  );
+
+  // Create a readline interface on stderr
+  const rl = readline.createInterface({
+    input: exec.stderr,
+    crlfDelay: Infinity,
+  });
+
+  // Stream stderr lines as they arrive
+  for await (const line of rl) {
+    logger.info(`Offsite: ${line}`);
+  }
+
+  // Wait for the process to complete
+  await exec;
+  logger.info('Offsite backup complete');
+};
+
 const backupJob = async () => {
   const docker = new Docker();
 
@@ -146,6 +245,7 @@ const backupJob = async () => {
   ]);
   logger.info('Prerequisites complete');
   logger.info('Backing up data...');
+  await Promise.all([backupLocal(), backupOffsite()]);
 
   logger.info('Starting containers...');
   await startContainers(containers);

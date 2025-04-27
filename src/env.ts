@@ -19,7 +19,11 @@ const envSchema = z.object({
 
   CONTAINERS: z.string().transform((val) => {
     const containers = val.split(',').map((container) => container.trim());
-    return containers.length > 0 ? containers : [];
+    if (containers[0] === '') {
+      return [];
+    } else {
+      return containers;
+    }
   }),
 });
 
