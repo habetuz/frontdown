@@ -32,5 +32,13 @@ Object.entries(process.env).forEach(([key, value]) => {
   console.log(`${key}: ${value}`);
 });
 
+const testObjectSchema = z.object({
+  test: z.string(),
+  test1: z.string().default('test'),
+});
+
+const testObject = testObjectSchema.parse({ test: 'test' });
+console.log('Test Object:', testObject);
+
 const env = parse(envSchema);
 export default env;
