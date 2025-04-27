@@ -29,9 +29,9 @@ const envSchema = z.object({
   }),
 });
 
-let env;
+let env: z.infer<typeof envSchema>;
 try {
-  parse(envSchema);
+  env = parse(envSchema);
 } catch (err) {
   const validationError = fromError(err);
   logger.error(validationError.toString());
