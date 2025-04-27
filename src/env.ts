@@ -1,4 +1,4 @@
-import { parse } from '@zodyac/env';
+//import { parse } from '@zodyac/env';
 import { z } from 'zod';
 import logger from './logger';
 import { fromError } from 'zod-validation-error';
@@ -31,7 +31,8 @@ const envSchema = z.object({
 
 let env: z.infer<typeof envSchema>;
 try {
-  env = parse(envSchema);
+  //env = parse(envSchema);
+  env = envSchema.parse(process.env)
 } catch (err) {
   const validationError = fromError(err);
   logger.error(validationError.toString());
