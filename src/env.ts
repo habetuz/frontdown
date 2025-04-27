@@ -1,5 +1,7 @@
 import { parse } from '@zodyac/env';
 import { z } from 'zod';
+import logger from './logger';
+import { fromError } from 'zod-validation-error';
 
 const envSchema = z.object({
   TZ: z.string().default('UTC'),
@@ -27,18 +29,12 @@ const envSchema = z.object({
   }),
 });
 
-console.log('Environment Variables:');
-Object.entries(process.env).forEach(([key, value]) => {
-  console.log(`${key}: ${value}`);
-});
-
-const testObjectSchema = z.object({
-  test: z.string(),
-  test1: z.string().default('test'),
-});
-
-const testObject = testObjectSchema.parse({ test: 'test' });
-console.log('Test Object:', testObject);
-
-const env = parse(envSchema);
+let env;
+try {
+  parse(envSchema);
+} catch (err) {
+  const validationError = fromError(err);
+  logger.error(validationError.toString());
+  process.exit(1);
+}
 export default env;
