@@ -19,9 +19,7 @@ RUN npm ci && \
 
 # Install rclone and borgbackup
 RUN apt update && \
-    apt install -y borgbackup curl busybox && \
-    curl https://rclone.org/install.sh | bash && \
-    apt remove -y busybox
+    apt install -y borgbackup
 
 # Start the application
 CMD ["node", "dist/main.js"]
