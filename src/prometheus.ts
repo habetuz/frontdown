@@ -4,7 +4,7 @@ const backup = async (docker: Docker) => {
   await docker.pull('curlimages/curl:latest');
   const container = await docker.createContainer({
     Image: 'curlimages/curl',
-    Cmd: ['http://prometheus:9090/api/v1/admin/tsdb/snapshot'], // Replace placeholders
+    Cmd: ['-XPOST', 'http://prometheus:9090/api/v1/admin/tsdb/snapshot'], // Replace placeholders
     HostConfig: {
       NetworkMode: 'grafana_default', // Same network
       AutoRemove: true, // Equivalent to --rm
