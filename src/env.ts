@@ -28,7 +28,7 @@ const envSchema = z.object({
     }
   }),
 
-  RUN_AFTER_STARTUP: z.boolean().default(false),
+  RUN_AFTER_STARTUP: z.coerce.boolean().default(false),
 });
 
 let env: z.infer<typeof envSchema>;
