@@ -1,5 +1,12 @@
 import Docker from 'dockerode';
+import fsPromises from 'node:fs/promises';
 
+type SnapshotResponse = {
+  status: string;
+  data: {
+    name: string;
+  };
+};
 const backup = async (docker: Docker) => {
   await docker.pull('curlimages/curl:latest');
   const container = await docker.createContainer({
@@ -21,7 +28,29 @@ const backup = async (docker: Docker) => {
     stderr: false,
   });
 
-  stream.pipe(process.stdout); // Show the output live
+  // Collect the output as a string
+  let output: string = '';
+  stream.on('data', (chunk) => {
+    output += String(chunk);
+  });
+
+  const outputJson: SnapshotResponse = JSON.parse(
+    output,
+  ) as unknown as SnapshotResponse;
+  if (outputJson.status !== 'success') {
+    throw new Error(
+      `Failed to create snapshot:\n${JSON.stringify(outputJson)}`,
+    );
+  }
+
+  // Define source and destination paths
+  const sourceDir = `/prometheus/snapshots/${outputJson.data.name}`;
+  const destDir = `/data/prometheus/`;
+
+  await fsPromises.mkdir(destDir, { recursive: true });
+  await fsPromises.cp(sourceDir, destDir, {
+    recursive: true,
+  });
 
   // Wait for the container to finish
   await container.wait();
