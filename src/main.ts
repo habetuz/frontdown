@@ -6,6 +6,7 @@ import logger from './logger';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import readline from 'node:readline';
+import prometheus from './prometheus';
 
 const BORG_RSH = `ssh -i ${env.OFFSITE_SSH_KEY_FILE} -o StrictHostKeyChecking=no -o UserKnownHostsFile=${env.SSH_KNOWN_HOSTS_FILE}`;
 const BORG_REPO_OFFSITE = `ssh://${env.OFFSITE_SSH_USER}@${env.OFFSITE_SSH_USER}.your-storagebox.de:23/${env.BACKUP_REPOSITORY_OFFSITE}`;
@@ -279,6 +280,7 @@ const backupJob = async () => {
     ensureRepoExistence(),
     stopContainers(docker),
     createPostgresBackup(docker),
+    prometheus.backup(docker),
   ]);
   logger.info('Prerequisites complete');
   logger.info('Backing up data...');
