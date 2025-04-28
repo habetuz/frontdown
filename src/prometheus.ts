@@ -1,6 +1,7 @@
 import Docker from 'dockerode';
 
 const backup = async (docker: Docker) => {
+  await docker.pull('curlimages/curl:latest');
   const container = await docker.createContainer({
     Image: 'curlimages/curl',
     Cmd: ['http://prometheus:9090/api/v1/admin/tsdb/snapshot'], // Replace placeholders
