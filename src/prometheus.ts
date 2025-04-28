@@ -1,6 +1,7 @@
 import Docker from 'dockerode';
 import fsPromises from 'node:fs/promises';
 import logger from './logger';
+import stream from 'node:stream';
 
 type SnapshotResponse = {
   status: string;
@@ -23,15 +24,19 @@ const backup = async (docker: Docker) => {
   await container.start();
 
   // Optionally: attach to container logs
-  const stream = await container.attach({
+  const containerStream = await container.attach({
     stream: true,
     stdout: true,
     stderr: true,
   });
 
+  const stdoutStream = new stream.PassThrough();
+
+  docker.modem.demuxStream(containerStream, stdoutStream, process.stderr);
+
   await container.wait();
 
-  const output = stream.read().toString();
+  const output = (stdoutStream.read() as Buffer).toString();
   logger.debug(output, 'Prometheus backup output');
 
   const outputJson: SnapshotResponse = JSON.parse(
