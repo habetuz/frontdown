@@ -1,4 +1,3 @@
-//import { parse } from '@zodyac/env';
 import { z } from 'zod';
 import logger from './logger';
 import { fromError } from 'zod-validation-error';
@@ -11,6 +10,7 @@ const envSchema = z.object({
   BACKUP_REPOSITORY_OFFSITE: z.string().default('./repo'),
   BACKUP_REPOSITORY_LOCAL: z.string().default('/repo'),
   BACKUP_REPOSITORY_PASSPHRASE: z.string(),
+  BACKUP_DAYS_TO_KEEP: z.number().default(30),
 
   OFFSITE_SSH_KEY_FILE: z.string().default('/config/ssh_key'),
   OFFSITE_SSH_USER: z.string(),
@@ -27,12 +27,13 @@ const envSchema = z.object({
       return containers;
     }
   }),
+
+  RUN_AFTER_STARTUP: z.boolean().default(false),
 });
 
 let env: z.infer<typeof envSchema>;
 try {
-  //env = parse(envSchema);
-  env = envSchema.parse(process.env)
+  env = envSchema.parse(process.env);
 } catch (err) {
   const validationError = fromError(err);
   logger.error(validationError.toString());

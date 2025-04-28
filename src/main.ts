@@ -233,6 +233,43 @@ const backupOffsite = async () => {
   logger.info('Offsite backup complete');
 };
 
+const pruneLocal = async () => {
+  const exec = execa({
+    env: {
+      BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+      BORG_REPO: env.BACKUP_REPOSITORY_LOCAL,
+    },
+  })`borg prune --list --keep-within ${env.BACKUP_DAYS_TO_KEEP}d`;
+  const rl = readline.createInterface({
+    input: exec.stderr,
+    crlfDelay: Infinity,
+  });
+  for await (const line of rl) {
+    logger.info(`Local prune: ${line}`);
+  }
+  await exec;
+  logger.info('Local prune complete');
+};
+
+const pruneOffsite = async () => {
+  const exec = execa({
+    env: {
+      BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+      BORG_REPO: BORG_REPO_OFFSITE,
+      BORG_RSH: BORG_RSH,
+    },
+  })`borg prune --list --keep-within ${env.BACKUP_DAYS_TO_KEEP}d`;
+  const rl = readline.createInterface({
+    input: exec.stderr,
+    crlfDelay: Infinity,
+  });
+  for await (const line of rl) {
+    logger.info(`Offsite prune: ${line}`);
+  }
+  await exec;
+  logger.info('Offsite prune complete');
+};
+
 const backupJob = async () => {
   const docker = new Docker();
 
@@ -247,8 +284,13 @@ const backupJob = async () => {
   logger.info('Backing up data...');
   await Promise.all([backupLocal(), backupOffsite()]);
 
-  logger.info('Starting containers...');
-  await startContainers(containers);
+  logger.info('Starting containers and pruning old archives...');
+  await Promise.all([
+    startContainers(containers),
+    pruneLocal(),
+    pruneOffsite(),
+  ]);
+
   logger.info('Backup job complete!');
 };
 
@@ -259,4 +301,6 @@ CronJob.from({
   timeZone: env.TZ,
 });
 
-void backupJob();
+if (env.RUN_AFTER_STARTUP) {
+  void backupJob();
+}
