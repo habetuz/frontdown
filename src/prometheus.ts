@@ -12,7 +12,7 @@ const backup = async (docker: Docker) => {
   await docker.pull('curlimages/curl:latest');
   const container = await docker.createContainer({
     Image: 'curlimages/curl',
-    Cmd: ['-XPOST', 'http://prometheus:9090/api/v1/admin/tsdb/snapshot'], // Replace placeholders
+    Cmd: ['-s', '-XPOST', 'http://prometheus:9090/api/v1/admin/tsdb/snapshot'],
     HostConfig: {
       NetworkMode: 'grafana_default', // Same network
       AutoRemove: true, // Equivalent to --rm
@@ -26,12 +26,13 @@ const backup = async (docker: Docker) => {
   const stream = await container.attach({
     stream: true,
     stdout: true,
-    stderr: false,
+    stderr: true,
   });
 
   // Collect the output as a string
   let output: string = '';
   stream.on('data', (chunk) => {
+    logger.debug(chunk);
     output += String(chunk);
   });
 
