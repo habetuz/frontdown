@@ -1,5 +1,6 @@
 import Docker from 'dockerode';
 import fsPromises from 'node:fs/promises';
+import logger from './logger';
 
 type SnapshotResponse = {
   status: string;
@@ -33,6 +34,8 @@ const backup = async (docker: Docker) => {
   stream.on('data', (chunk) => {
     output += String(chunk);
   });
+
+  logger.debug(output);
 
   const outputJson: SnapshotResponse = JSON.parse(
     output,
