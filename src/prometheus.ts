@@ -52,6 +52,19 @@ const backup = async (docker: Docker) => {
     recursive: true,
   });
 
+  // Read the contents of the source directory
+  const snapshots = await fsPromises.readdir('/prometheus/snapshots');
+
+  // Delete all snapshots except the current one
+  await Promise.all(
+    snapshots.map(async (snapshot) => {
+      if (snapshot !== outputJson.data.name) {
+        const snapshotPath = `/prometheus/snapshots/${snapshot}`;
+        await fsPromises.rm(snapshotPath, { recursive: true, force: true });
+      }
+    }),
+  );
+
   // Wait for the container to finish
   await container.wait();
 
