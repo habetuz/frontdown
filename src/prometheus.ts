@@ -29,14 +29,10 @@ const backup = async (docker: Docker) => {
     stderr: true,
   });
 
-  // Collect the output as a string
-  let output: string = '';
-  stream.on('data', (chunk) => {
-    logger.debug(chunk);
-    output += String(chunk);
-  });
+  await container.wait();
 
-  logger.debug(output);
+  const output = stream.read().toString();
+  logger.debug(output, 'Prometheus backup output');
 
   const outputJson: SnapshotResponse = JSON.parse(
     output,
@@ -68,9 +64,6 @@ const backup = async (docker: Docker) => {
       }
     }),
   );
-
-  // Wait for the container to finish
-  await container.wait();
 
   console.log('Prometheus backup created');
 };
