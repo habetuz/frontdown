@@ -18,7 +18,7 @@ const backup = async (docker: Docker) => {
   const stream = await container.attach({
     stream: true,
     stdout: true,
-    stderr: true,
+    stderr: false,
   });
 
   stream.pipe(process.stdout); // Show the output live
