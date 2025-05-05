@@ -1,7 +1,7 @@
 {
   "version": "1.4.4",
   "devDependencies": {
-    "@eslint/js": "^9.25.1",
+    "@eslint/js": "^9.26.0",
     "@types/dockerode": "^3.3.38",
     "eslint": "^9.25.1",
     "pino-pretty": "^13.0.0",
