@@ -15,7 +15,7 @@ const backup = async (docker: Docker) => {
     Image: 'curlimages/curl',
     Cmd: ['-s', '-XPOST', 'http://prometheus:9090/api/v1/admin/tsdb/snapshot'],
     HostConfig: {
-      NetworkMode: 'grafana_default', // Same network
+      NetworkMode: 'grafana_internal', // Same network
       AutoRemove: true, // Equivalent to --rm
     },
   });
