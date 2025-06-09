@@ -23,7 +23,7 @@
     "dockerode": "^4.0.7",
     "execa": "^9.6.0",
     "pino": "^9.7.0",
-    "zod": "^3.25.54",
+    "zod": "^3.25.56",
     "zod-validation-error": "^3.4.1"
   }
 }
