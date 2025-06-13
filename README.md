@@ -2,6 +2,8 @@
 
 This is my personal backup solution for my docker landscape using borg.
 
+14 daily, 8 weekly, 24 monthly and 4 yearly backups are kept.
+
 ## Volumes
 
 | Path                 | Description                                                          |

@@ -10,6 +10,7 @@ import prometheus from './prometheus';
 
 const BORG_RSH = `ssh -i ${env.OFFSITE_SSH_KEY_FILE} -o StrictHostKeyChecking=no -o UserKnownHostsFile=${env.SSH_KNOWN_HOSTS_FILE}`;
 const BORG_REPO_OFFSITE = `ssh://${env.OFFSITE_SSH_USER}@${env.OFFSITE_SSH_USER}.your-storagebox.de:23/${env.BACKUP_REPOSITORY_OFFSITE}`;
+const BORG_PRUNE_COMMAND = `borg prune --list --keep-daily 14 --keep-weekly 8 --keep-monthly 24 --keep-yearly 4`;
 
 const formatDate = (date: Date): string => {
   const berlinDateParts = new Intl.DateTimeFormat('en-CA', {
@@ -240,7 +241,7 @@ const pruneLocal = async () => {
       BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
       BORG_REPO: env.BACKUP_REPOSITORY_LOCAL,
     },
-  })`borg prune --list --keep-within ${env.BACKUP_DAYS_TO_KEEP}d`;
+  })`${BORG_PRUNE_COMMAND}`;
   const rl = readline.createInterface({
     input: exec.stderr,
     crlfDelay: Infinity,
@@ -259,7 +260,7 @@ const pruneOffsite = async () => {
       BORG_REPO: BORG_REPO_OFFSITE,
       BORG_RSH: BORG_RSH,
     },
-  })`borg prune --list --keep-within ${env.BACKUP_DAYS_TO_KEEP}d`;
+  })`${BORG_PRUNE_COMMAND}`;
   const rl = readline.createInterface({
     input: exec.stderr,
     crlfDelay: Infinity,
