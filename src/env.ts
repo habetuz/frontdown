@@ -36,10 +36,7 @@ const envSchema = z.object({
 
 let env: z.infer<typeof envSchema>;
 try {
-  console.log(process.env);
   env = envSchema.parse(process.env);
-  console.log(env);
-  process.exit(0);
 } catch (err) {
   const validationError = fromError(err);
   logger.error(validationError.toString());
