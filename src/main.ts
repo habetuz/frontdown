@@ -293,7 +293,7 @@ const backupJob = async () => {
   await Promise.all([
     startContainers(containers),
     pruneLocal(),
-    pruneOffsite(),
+    //pruneOffsite(),
   ]);
 
   logger.info('Backup job complete!');
