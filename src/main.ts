@@ -7,11 +7,10 @@ import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import readline from 'node:readline';
 import prometheus from './prometheus';
-import { exit } from 'node:process';
 
 const BORG_RSH = `ssh -i ${env.OFFSITE_SSH_KEY_FILE} -o StrictHostKeyChecking=no -o UserKnownHostsFile=${env.SSH_KNOWN_HOSTS_FILE}`;
 const BORG_REPO_OFFSITE = `ssh://${env.OFFSITE_SSH_USER}@${env.OFFSITE_SSH_USER}.your-storagebox.de:23/${env.BACKUP_REPOSITORY_OFFSITE}`;
-const BORG_PRUNE_COMMAND = `borg prune --list --debug --keep-daily 14 --keep-weekly 8 --keep-monthly 24 --keep-yearly 4`;
+const BORG_PRUNE_COMMAND = `borg prune --list --keep-daily 14 --keep-weekly 8 --keep-monthly 24 --keep-yearly 4`;
 
 const formatDate = (date: Date): string => {
   const berlinDateParts = new Intl.DateTimeFormat('en-CA', {
@@ -279,28 +278,6 @@ const backupJob = async () => {
   const docker = new Docker();
 
   logger.info('Starting backup...');
-
-  logger.debug('Trying out pruning');
-
-  console.log(await execa({
-    env: {
-      BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
-      BORG_REPO: BORG_REPO_OFFSITE,
-      BORG_RSH: BORG_RSH,
-      BORG_RELOCATED_REPO_ACCESS_IS_OK: 'yes',
-    },
-  })`borg info`)
-
-  console.log(await execa({
-    env: {
-      BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
-      BORG_REPO: BORG_REPO_OFFSITE,
-      BORG_RSH: BORG_RSH,
-      BORG_RELOCATED_REPO_ACCESS_IS_OK: 'yes',
-    },
-  })`borg prune --list --keep-daily 14 --keep-weekly 8 --keep-monthly 24 --keep-yearly 4`)
-
-  exit(0);
 
   const [_, containers] = await Promise.all([
     ensureRepoExistence(),
