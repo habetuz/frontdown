@@ -281,16 +281,25 @@ const backupJob = async () => {
   logger.info('Starting backup...');
 
   logger.debug('Trying out pruning');
-  const exec = await execa({
+
+  console.log(await execa({
     env: {
       BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
       BORG_REPO: BORG_REPO_OFFSITE,
       BORG_RSH: BORG_RSH,
       BORG_RELOCATED_REPO_ACCESS_IS_OK: 'yes',
     },
-  })`${BORG_PRUNE_COMMAND}`;
+  })`borg info`)
 
-  console.log(exec)
+  console.log(await execa({
+    env: {
+      BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
+      BORG_REPO: BORG_REPO_OFFSITE,
+      BORG_RSH: BORG_RSH,
+      BORG_RELOCATED_REPO_ACCESS_IS_OK: 'yes',
+    },
+  })`borg prune --keep-last 100`)
+
   exit(0);
 
   const [_, containers] = await Promise.all([
