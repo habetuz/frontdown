@@ -240,6 +240,7 @@ const pruneLocal = async () => {
     env: {
       BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
       BORG_REPO: env.BACKUP_REPOSITORY_LOCAL,
+      BORG_RELOCATED_REPO_ACCESS_IS_OK: 'yes',
     },
   })`${BORG_PRUNE_COMMAND}`;
   const rl = readline.createInterface({
@@ -259,6 +260,7 @@ const pruneOffsite = async () => {
       BORG_PASSPHRASE: env.BACKUP_REPOSITORY_PASSPHRASE,
       BORG_REPO: BORG_REPO_OFFSITE,
       BORG_RSH: BORG_RSH,
+      BORG_RELOCATED_REPO_ACCESS_IS_OK: 'yes',
     },
   })`${BORG_PRUNE_COMMAND}`;
   const rl = readline.createInterface({
@@ -276,6 +278,12 @@ const backupJob = async () => {
   const docker = new Docker();
 
   logger.info('Starting backup...');
+
+  logger.debug('Trying out pruning')
+  await Promise.all([
+    pruneLocal(),
+    pruneOffsite(),
+  ]);
 
   const [_, containers] = await Promise.all([
     ensureRepoExistence(),
