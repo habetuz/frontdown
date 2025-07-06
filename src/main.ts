@@ -298,7 +298,7 @@ const backupJob = async () => {
       BORG_RSH: BORG_RSH,
       BORG_RELOCATED_REPO_ACCESS_IS_OK: 'yes',
     },
-  })`borg prune --keep-last 100`)
+  })`borg prune --keep-daily 14 --keep-weekly 8 --keep-monthly 24 --keep-yearly 4`)
 
   exit(0);
 
