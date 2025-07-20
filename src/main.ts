@@ -235,6 +235,7 @@ const backupOffsite = async () => {
   logger.info('Offsite backup complete');
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const pruneLocal = async () => {
   const exec = execa({
     env: {
@@ -254,6 +255,7 @@ const pruneLocal = async () => {
   logger.info('Local prune complete');
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const pruneOffsite = async () => {
   const exec = execa({
     env: {
@@ -292,7 +294,7 @@ const backupJob = async () => {
   logger.info('Starting containers and pruning old archives...');
   await Promise.all([
     startContainers(containers),
-    pruneLocal(),
+    //pruneLocal(),
     //pruneOffsite(),
   ]);
 
