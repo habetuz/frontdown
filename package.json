@@ -20,7 +20,7 @@
   "dependencies": {
     "@types/cron": "^2.4.3",
     "cron": "^4.3.2",
-    "dockerode": "^4.0.8",
+    "dockerode": "^4.0.9",
     "dotenv": "^17.2.3",
     "execa": "^9.6.0",
     "pino": "^9.12.0",
